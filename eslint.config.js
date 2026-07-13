@@ -43,10 +43,23 @@ export default tseslint.config(
           ],
           patterns: [
             {
-              group: ['react*', 'zustand*', '**/ui/*'],
+              group: ['react*', 'zustand*', '**/ui/*', '../ui/*'],
               message: 'A engine não pode depender de UI ou de bibliotecas de estado.',
             },
           ],
+        },
+      ],
+      'no-restricted-globals': [
+        'error',
+        { name: 'window', message: 'A engine é TypeScript puro: proibido acessar window.' },
+        { name: 'document', message: 'A engine é TypeScript puro: proibido acessar o DOM.' },
+        {
+          name: 'localStorage',
+          message: 'Persistência vive na UI (src/ui/store.ts): proibido localStorage na engine.',
+        },
+        {
+          name: 'sessionStorage',
+          message: 'Persistência vive na UI (src/ui/store.ts): proibido sessionStorage na engine.',
         },
       ],
     },

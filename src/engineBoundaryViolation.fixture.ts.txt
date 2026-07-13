@@ -1,0 +1,15 @@
+// Fixture de lint: código que a engine NUNCA pode conter. Este arquivo é .txt
+// de propósito — não é compilado nem lintado; o teste engineBoundaries.lint.test.ts
+// o linta como se fosse um arquivo de src/engine e espera erros.
+import { createStore } from 'zustand/vanilla';
+
+import { useGameStore } from '../ui/store';
+
+export function breakEngineBoundaries(): void {
+  localStorage.setItem('f1-manager-web:save', 'engine não pode persistir');
+  sessionStorage.clear();
+  window.location.reload();
+  document.title = 'engine não pode tocar o DOM';
+  createStore(() => ({}));
+  useGameStore((store) => store);
+}
