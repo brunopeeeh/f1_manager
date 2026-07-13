@@ -79,6 +79,29 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull();
   });
 
+  it('simular corrida mostra a tabela e repetir a simulação dá o mesmo resultado', async () => {
+    const state = createNewGameState('falco-corse');
+    window.localStorage.setItem(SAVE_STORAGE_KEY, serializeGameState(state));
+
+    await renderFreshApp();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Simular corrida' }));
+
+    expect(screen.getByRole('heading', { name: /Resultado/ })).toBeDefined();
+    const dataRows = screen.getAllByRole('row').slice(1);
+    expect(dataRows).toHaveLength(20);
+    const firstRunPodium = dataRows.slice(0, 3).map((row) => row.textContent);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar ao hub' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Simular corrida' }));
+
+    const rerunPodium = screen
+      .getAllByRole('row')
+      .slice(1, 4)
+      .map((row) => row.textContent);
+    expect(rerunPodium).toEqual(firstRunPodium);
+  });
+
   it('na última corrida o botão Avançar fica desabilitado com aviso', async () => {
     const state = { ...createNewGameState('titan-apex'), currentRaceIndex: 11 };
     window.localStorage.setItem(SAVE_STORAGE_KEY, serializeGameState(state));

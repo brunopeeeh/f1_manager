@@ -9,9 +9,10 @@ function circuitLabel(circuitId: string): string {
 
 interface HubScreenProps {
   gameState: GameState;
+  onSimulateRace: () => void;
 }
 
-export function HubScreen({ gameState }: HubScreenProps) {
+export function HubScreen({ gameState, onSimulateRace }: HubScreenProps) {
   const advance = useGameStore((store) => store.advance);
 
   const playerTeam = gameState.teams.find((team) => team.id === gameState.playerTeamId);
@@ -50,7 +51,12 @@ export function HubScreen({ gameState }: HubScreenProps) {
           return (
             <li key={circuitId} style={{ fontWeight: isNextRace ? 'bold' : 'normal' }}>
               {circuitLabel(circuitId)}
-              {isNextRace && ' ← próxima corrida'}
+              {isNextRace && (
+                <>
+                  {' ← próxima corrida '}
+                  <button onClick={onSimulateRace}>Simular corrida</button>
+                </>
+              )}
             </li>
           );
         })}
