@@ -71,6 +71,38 @@ describe('simulateRace', () => {
 
     expect(topWins / totalRuns).toBeGreaterThan(0.4);
     expect(backmarkerWins / totalRuns).toBeLessThan(0.15);
+    expect(topWins).toBeGreaterThan(backmarkerWins);
+  });
+
+  it('variância de posição: em 30 seeds, um piloto do tier fundo chega ao top 5 ao menos uma vez', () => {
+    const state = raceState();
+    const backmarkerTeams = new Set<string>(teamTiers.backmarkers);
+
+    let seedsWithBackmarkerInTop5 = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      const top5 = simulateRace(state, seed).slice(0, 5);
+      if (top5.some((entry) => backmarkerTeams.has(entry.teamId))) {
+        seedsWithBackmarkerInTop5++;
+      }
+    }
+
+    expect(seedsWithBackmarkerInTop5).toBeGreaterThanOrEqual(1);
+  });
+
+  it('variância por piloto: a posição de um piloto de meio de grid varia entre 30 seeds', () => {
+    const state = raceState();
+
+    const positions = new Set<number>();
+    for (let seed = 1; seed <= 30; seed++) {
+      const midfielder = simulateRace(state, seed).find(
+        (entry) => entry.driverId === 'niklas-sorensen',
+      );
+      if (midfielder) {
+        positions.add(midfielder.position);
+      }
+    }
+
+    expect(positions.size).toBeGreaterThan(1);
   });
 });
 

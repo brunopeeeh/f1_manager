@@ -18,6 +18,10 @@ const SLOWEST_MULTIPLIER = 1.15;
 const MAX_PERFORMANCE_GAIN = 0.15;
 /** Variação máxima por volta, em ms, para um piloto hipotético de consistency 0. */
 const LAP_VARIATION_RANGE_MS = 2000;
+/** Amplitude mínima da forma do dia (consistency 100). */
+const DAY_FORM_BASE_AMPLITUDE = 0.03;
+/** Amplitude extra da forma do dia para um piloto hipotético de consistency 0. */
+const DAY_FORM_CONSISTENCY_AMPLITUDE = 0.5;
 
 export function computeCarFactor(car: Car, circuit: Circuit): number {
   return (car.aero * circuit.aeroImportance + car.power * circuit.powerImportance) / 100;
@@ -29,8 +33,13 @@ export function computePerformance(car: Car, driver: Driver, circuit: Circuit): 
   return carFactor * CAR_WEIGHT + driverFactor * DRIVER_WEIGHT;
 }
 
-export function computeBaseLapTimeMs(car: Car, driver: Driver, circuit: Circuit): number {
-  const performance = computePerformance(car, driver, circuit);
+export function computeDayFormAmplitude(driver: Driver): number {
+  return (
+    DAY_FORM_BASE_AMPLITUDE + ((100 - driver.consistency) / 100) * DAY_FORM_CONSISTENCY_AMPLITUDE
+  );
+}
+
+function baseLapTimeMsFromPerformance(performance: number, circuit: Circuit): number {
   return circuit.baseLapTimeMs * (SLOWEST_MULTIPLIER - performance * MAX_PERFORMANCE_GAIN);
 }
 
@@ -50,7 +59,9 @@ export function simulateRace(state: GameState, seed: number): RaceResult {
         throw new Error(`Piloto desconhecido na equipe ${team.id}: ${driverId}`);
       }
 
-      const baseLapTimeMs = computeBaseLapTimeMs(team.car, driver, circuit);
+      const dayForm = (rng.next() * 2 - 1) * computeDayFormAmplitude(driver);
+      const adjustedPerformance = computePerformance(team.car, driver, circuit) * (1 + dayForm);
+      const baseLapTimeMs = baseLapTimeMsFromPerformance(adjustedPerformance, circuit);
       const maxVariationMs = LAP_VARIATION_RANGE_MS * ((100 - driver.consistency) / 100);
 
       let totalTimeMs = 0;
